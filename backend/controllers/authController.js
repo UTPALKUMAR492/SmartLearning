@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 import { generateToken, generateRefreshToken, verifyToken } from "../utils/generateToken.js";
 
 // Register new user
@@ -65,6 +66,12 @@ export const login = async (req, res) => {
     const { email, password, role } = req.body;
 
     console.log('Login attempt:', { email, role, ip: req.ip });
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        message: "Database is unavailable. Start MongoDB or check the MongoDB Atlas network access settings.",
+      });
+    }
 
     const user = await User.findOne({ email });
     console.log('User lookup result:', user ? { id: user._id, email: user.email, role: user.role } : null);

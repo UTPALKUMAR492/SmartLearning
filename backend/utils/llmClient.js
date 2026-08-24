@@ -69,6 +69,7 @@ export async function generateQuestionsWithLLM({ topic, numQuestions = 10, cours
     }
     throw err;
   }
+
   const data = await response.json();
   if (!data.choices || !data.choices[0]?.message?.content) {
     console.warn('LLM response missing choices:', JSON.stringify(data).slice(0, 1000));
