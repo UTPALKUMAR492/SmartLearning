@@ -142,6 +142,7 @@ npm run dev   # starts Vite dev server (http://localhost:5173 or 5174)
 Notes
 - Backend serves uploads via `/uploads` (e.g. `http://localhost:5000/uploads/notes/<file.pdf>`).
 - CORS is configured to allow the frontend origins defined in `.env` (or localhost ports in `index.js`).
+- For first-time AWS deployment, follow [docs/AWS_DEPLOYMENT.md](docs/AWS_DEPLOYMENT.md). The repository includes an Amplify build specification in `amplify.yml`.
 
 ---
 

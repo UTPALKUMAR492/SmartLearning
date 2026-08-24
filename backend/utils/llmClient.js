@@ -5,7 +5,12 @@ const LLM_FALLBACK_ONLY = process.env.LLM_FALLBACK_ONLY === 'true';
 let openaiCooldownUntil = 0;
 const OPENAI_COOLDOWN_DURATION_MS = Number(process.env.OPENAI_COOLDOWN_MS || 10 * 60 * 1000); // default 10min
 
-const fetchClient = globalThis.fetch || (await import('node-fetch')).default;
+let fetchClient = globalThis.fetch;
+
+const getFetchClient = async () => {
+  if (!fetchClient) fetchClient = (await import('node-fetch')).default;
+  return fetchClient;
+};
 
 // Minimal startup log to confirm key presence (does not print the key)
 console.log('LLM client initialized. OPENAI_API_KEY present:', !!OPENAI_API_KEY, 'LLM_FALLBACK_ONLY:', LLM_FALLBACK_ONLY, 'OPENAI_COOLDOWN_DURATION_MS:', OPENAI_COOLDOWN_DURATION_MS);
@@ -33,7 +38,7 @@ export async function generateQuestionsWithLLM({ topic, numQuestions = 10, cours
   const courseContext = course ? `Course title: ${course.title || ''}\nCourse description: ${course.description || ''}\n` : '';
   const prompt = `You are an expert educator. ${courseContext}Create ${numQuestions} clear, realistic, course-aligned multiple-choice questions for the topic below. Each question should be a real-world or applied scenario directly relevant to the course material. Provide exactly 4 plausible options (A-D). Return only a JSON array (no commentary) where each item has: \n- text: question text\n- options: array of 4 strings\n- answer: the exact option text that is correct\n- difficulty: easy|medium|hard\n\nTopic: ${topic}`;
 
-  const response = await fetchClient(OPENAI_API_URL, {
+  const response = await (await getFetchClient())(OPENAI_API_URL, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -103,7 +108,7 @@ export async function generateQuizWithLLM({ questionBank, userPerformance, numQu
 
   const prompt = `You are an AI quiz generator. Given the following question bank and user performance, select ${numQuestions} questions at the right difficulty for the user.\n\nUser Performance: ${JSON.stringify(userPerformance)}\n\nQuestion Bank: ${JSON.stringify(questionBank)}\n\nReturn a JSON array of selected questions, each with text, options, and difficulty.`;
 
-  const response = await fetchClient(OPENAI_API_URL, {
+  const response = await (await getFetchClient())(OPENAI_API_URL, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${OPENAI_API_KEY}`,
